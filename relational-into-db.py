@@ -28,32 +28,28 @@ def create_account(num_account):
     return account
 
 #create 100 account
-account=create_account(100)
-#save data into csv
-account.to_csv(f"account_{current_date}.csv",index=False)
+account=create_account(randint(15, 43))
 
 #Generate Transaction Table
 def transaction(num_trans):
     trans=pd.DataFrame()
     for i in range(0,num_trans):
         trans.loc[i,'transaction_id']= fake.bothify(text='FT#########')
-        trans.loc[i,'created_at']=fake.date_time_between(start_date='-2y', end_date='now', tzinfo=None)
-        trans.loc[i,'recipient_bank']=fake.random_element(elements=("Dana","Gopay","LinkAja","Ovo","Shopeepay","BRI","BNI","BSI","BCA",
-                                                                    "Mandiri","JAGO","Maybank","Permata","Seabank","Muamalat","BJB"))
+        trans.loc[i,'created_at']=fake.date_time_between(start_date='-2d', end_date='-1d', tzinfo=None)
+        trans.loc[i,'recipient_bank']=fake.random_element(elements=("Santander","Novo Banco", "Caixa Geral de Depósitos (CGD)", 
+                                                                    "Millennium BCP	Porto", "Banco CTT", "Banco BPI", "ActivoBank Portugal"))
         trans.loc[i,'account_number']=fake.aba()
         trans.loc[i,'amount']=fake.random_int(min=10000, max=5000000, step=1000)
-        trans.loc[i,'unique_code']=fake.random_int(min=50, max=999)
+        trans.loc[i,'unique_code']=fake.random_int(min=50, max=9999)
         trans.loc[i,'transaction_status']=fake.random_element(elements=("Need Confirmation","Checking","Processed","Success","Failed","Cancelled"))
     return trans
 #generate 1000 transaction 
-trans=transaction(10000)
+trans=transaction(15000)
 
 #generate admin fee based on random 0 or 1500
 trans['admin_fee']=random.choices([0,1500],k=len(trans))
 #generate relational user id in account table and transaction table
 trans['user_id']=random.choices(account["id"], k=len(trans))
-#save data into csv
-trans.to_csv(f"transaction_{current_date}.csv",index=False)
 
 #Make Payment table
 def payment(num_trans):
@@ -67,11 +63,9 @@ def payment(num_trans):
     return payment
 
 #generate 1000 payment process
-pay=payment(10000)
+pay=payment(15000)
 #generate relational transaction id in trans table and payment table
 pay['transaction_id']=random.choices(trans["transaction_id"], k=len(pay))
-#save data into csv
-pay.to_csv(f"payment_{current_date}.csv", index=False)
 
 
 # Load data into PostgreSQL incrementally
@@ -87,7 +81,7 @@ def load_to_postgres_incremental(table_name, data, engine):
         print(f"Error loading data into PostgreSQL for {table_name}: {str(e)}")
 
 # Load data incrementally into PostgreSQL
-load_to_postgres_incremental('account', account, engine)
+#load_to_postgres_incremental('account', account, engine)
 #load_to_postgres_incremental('transaction', trans, engine)
-#load_to_postgres_incremental('payment', pay, engine)
+load_to_postgres_incremental('payment', pay, engine)
         
